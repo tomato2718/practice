@@ -1,9 +1,8 @@
-from typing import Protocol, TypeVar
 from collections import defaultdict
+from typing import Protocol, TypeVar
 
 
 class Card(Protocol):
-    number: int
     weight: int
     name: str
 
