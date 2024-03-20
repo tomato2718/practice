@@ -122,10 +122,12 @@ class TestGame:
     @staticmethod
     def test_start_game(game: Game):
         game._start_round = MagicMock()
+        game._find_winner = MagicMock()
 
         game._start_game()
 
         assert game._start_round.call_count == 13
+        assert game._find_winner.call_count == 1
 
     @staticmethod
     def test_start_round(): ...
@@ -243,16 +245,16 @@ class TestGame:
         game.add_player(MockPlayer("baz"))
         game.add_player(MockPlayer("qux"))
 
-        plays = {
-            "foo": 25,
-            "bar": 31,
-            "baz": 17,
-            "qux": 5,
-        }
+        game._find_current_round_winner(
+            {
+                "foo": MagicMock(weight=25),
+                "bar": MagicMock(weight=31),
+                "baz": MagicMock(weight=17),
+                "qux": MagicMock(weight=5),
+            }
+        )
 
-        game._find_current_round_winner(plays)
-
-        assert game._score_board["bar"] == 1
         assert game._score_board["foo"] == 0
+        assert game._score_board["bar"] == 1
         assert game._score_board["baz"] == 0
         assert game._score_board["qux"] == 0
