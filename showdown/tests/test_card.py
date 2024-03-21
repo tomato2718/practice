@@ -1,14 +1,14 @@
 import pytest
 
-from showdown.showdown._card import Card, CardStack
+from showdown.showdown._card import CardImp, CardStack
 
 
 class TestCard:
     @staticmethod
     def test_calculate_weight():
-        heartA = Card._calculate_weight("紅心", "A")
-        heart2 = Card._calculate_weight("紅心", "2")
-        spade2 = Card._calculate_weight("黑桃", "2")
+        heartA = CardImp._calculate_weight("紅心", "A")
+        heart2 = CardImp._calculate_weight("紅心", "2")
+        spade2 = CardImp._calculate_weight("黑桃", "2")
 
         assert heartA > spade2 > heart2
 
@@ -26,7 +26,7 @@ class TestCardStack:
 
         for i in range(52):
             card = card_stack.draw()
-            assert isinstance(card, Card)
+            assert isinstance(card, CardImp)
             assert len(card_stack._stack) == 51 - i
 
         with pytest.raises(Exception):

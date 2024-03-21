@@ -1,3 +1,9 @@
+__all__ = [
+    "CardImp",
+    "CardStack",
+    "DummyCard",
+]
+
 from typing import Literal, TypeAlias
 from random import shuffle
 
@@ -30,7 +36,7 @@ RANK: dict[_Ranks, int] = {
 }
 
 
-class Card:
+class CardImp:
     name: str
     weight: int
 
@@ -44,19 +50,24 @@ class Card:
         return weight
 
 
+class DummyCard:
+    name = ""
+    weight = -1
+
+
 class CardStack:
-    _stack: list[Card]
+    _stack: list[CardImp]
 
     def __init__(self) -> None:
         self._stack = []
         for color in COLOR:
             for rank in RANK:
-                self._stack.append(Card(color=color, rank=rank))
+                self._stack.append(CardImp(color=color, rank=rank))
 
     def shuffle(self) -> None:
         shuffle(self._stack)
 
-    def draw(self) -> Card:
+    def draw(self) -> CardImp:
         if self._stack:
             return self._stack.pop()
         else:
