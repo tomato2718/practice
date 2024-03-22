@@ -202,13 +202,13 @@ class TestGame:
     @staticmethod
     def test_ask_for_play(game: Game, MockPlayer: type[ShowdownPlayer]):
         player = MockPlayer("foo")
-        player.action = MagicMock()
-        plays = {}
+        mock_card = MagicMock()
+        player.action = MagicMock(return_value=mock_card)
 
-        game._ask_for_play(player, plays=plays)
+        card = game._ask_for_play(player)
 
         player.action.assert_called()
-        assert plays[player.name] is not None
+        assert card is mock_card
 
     @staticmethod
     def test_check_return_deck(game: Game, MockPlayer: type[ShowdownPlayer]):

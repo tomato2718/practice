@@ -80,7 +80,7 @@ class Game:
         for player in self._players:
             print(f"輪到 {player.name} 行動")
             self._ask_for_exchange(player, round=__round)
-            self._ask_for_play(player, plays=plays)
+            plays[player.name] = self._ask_for_play(player)
         self._find_current_round_winner(plays)
         self._check_return_deck(__round)
 
@@ -110,9 +110,9 @@ class Game:
     ) -> None:
         self._exchanged[round].append(players)
 
-    def _ask_for_play(self, __player: ShowdownPlayer, plays: dict[str, Card]) -> None:
+    def _ask_for_play(self, __player: ShowdownPlayer) -> Card:
         card = __player.action()
-        plays[__player.name] = card
+        return card
 
     def _check_return_deck(self, __round: int) -> None:
         exchange_delay = 3
@@ -121,9 +121,9 @@ class Game:
             self._exchange_deck(player1, player2)
 
     def _find_current_round_winner(self, plays: dict[str, Card]) -> None:
-        winner, _ = max(plays.items(), key=lambda x: x[1].weight)
         for player, card in plays.items():
             print(f"{player} 出的是 {card.name}")
+        winner, _ = max(plays.items(), key=lambda x: x[1].weight)
         print(f"此回合獲勝的是 {winner} !")
         self._score_board[winner] += 1
 
