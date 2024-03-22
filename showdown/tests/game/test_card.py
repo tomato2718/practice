@@ -1,11 +1,14 @@
-from showdown.showdown.game._card import Card
+from showdown.showdown.game._card import Card, _Colors, _Ranks
 
 
 class TestCard:
     @staticmethod
     def test_calculate_weight():
-        heartA = Card._calculate_weight("紅心", "A")
-        heart2 = Card._calculate_weight("紅心", "2")
-        spade2 = Card._calculate_weight("黑桃", "2")
-
-        assert heartA > spade2 > heart2
+        COLOR: list[_Colors] = ["梅花", "方塊", "紅心", "黑桃"]
+        RANK: list[_Ranks] = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"]
+        last_weight = -1
+        for rank in RANK:
+            for color in COLOR:
+                weight = Card._calculate_weight(color, rank)
+                assert weight > last_weight
+                last_weight = weight
