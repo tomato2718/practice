@@ -1,4 +1,3 @@
-from typing import TypeVar
 from unittest.mock import MagicMock
 
 import pytest
@@ -29,12 +28,13 @@ class TestGame:
             def __init__(self, __name: str):
                 self.name = __name
 
-            _PlayerNo = TypeVar("_PlayerNo")
+            def set_deck(self, __deck: set[Card]) -> None:
+                self.deck = __deck
 
             def choose_player_to_exchange_card(
                 self,
-                players: dict[str, _PlayerNo],
-            ) -> _PlayerNo: ...
+                players: list[str],
+            ) -> int: ...
 
             def action(self) -> Card: ...
 
@@ -56,6 +56,10 @@ class TestGame:
         assert game._players[1].name == "bar"
         assert game._players[2].name == "baz"
         assert game._players[3].name == "qux"
+        assert game._players_name[0] == "foo"
+        assert game._players_name[1] == "bar"
+        assert game._players_name[2] == "baz"
+        assert game._players_name[3] == "qux"
         assert game._score_board["foo"] == 0
         assert game._score_board["bar"] == 0
         assert game._score_board["baz"] == 0
@@ -74,13 +78,11 @@ class TestGame:
 
         game._shuffle_card_stack = MagicMock()
         game._deal_cards = MagicMock()
-        game._generate_player_map = MagicMock()
         game._start_game = MagicMock()
         game.start()
 
         game._shuffle_card_stack.assert_called()
         game._deal_cards.assert_called()
-        game._generate_player_map.assert_called()
         game._start_game.assert_called()
 
     @staticmethod
@@ -104,22 +106,6 @@ class TestGame:
             assert len(player.deck) == 13
 
     @staticmethod
-    def test_generate_player_map(game: Game, MockPlayer: type[ShowdownPlayer]):
-        game.add_player(MockPlayer("foo"))
-        game.add_player(MockPlayer("bar"))
-        game.add_player(MockPlayer("baz"))
-        game.add_player(MockPlayer("qux"))
-
-        game._generate_player_map()
-
-        assert game._player_map == {
-            "foo": 0,
-            "bar": 1,
-            "baz": 2,
-            "qux": 3,
-        }
-
-    @staticmethod
     def test_start_game(game: Game):
         game._start_round = MagicMock()
         game._find_winner = MagicMock()
@@ -134,7 +120,7 @@ class TestGame:
 
     @staticmethod
     def test_ask_for_exchange(game: Game, MockPlayer: type[ShowdownPlayer]):
-        game._player_map = MagicMock()
+        game._players_name = MagicMock()
         game._players = MagicMock()
 
         player1 = MockPlayer("foo")

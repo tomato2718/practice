@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Protocol, TypeVar
+from typing import Protocol
 
 
 class Card(Protocol):
@@ -17,12 +17,12 @@ class ShowdownPlayer(Protocol):
     exchanged: bool
     deck: set[Card]
 
-    _PlayerNo = TypeVar("_PlayerNo", bound=int)
+    def set_deck(self, __deck: set[Card]) -> None: ...
 
     def choose_player_to_exchange_card(
         self,
-        players: dict[str, _PlayerNo],
-    ) -> _PlayerNo: ...
+        players: list[str],
+    ) -> int: ...
 
     def action(self) -> Card: ...
 
@@ -33,12 +33,13 @@ class Game:
     _card_stack: CardStack
     _score_board: dict[str, int]
     _players: list[ShowdownPlayer]
-    _player_map: dict[str, int]
+    _players_name: list[str]
     _exchanged: dict[int, list[tuple[ShowdownPlayer, ShowdownPlayer]]]
 
     def __init__(self, card_stack: CardStack) -> None:
         self._score_board = dict()
         self._players = list()
+        self._players_name = list()
         self._exchanged = defaultdict(list)
         self._card_stack = card_stack
 
@@ -47,6 +48,7 @@ class Game:
             raise Exception("There's already 4 players.")
         self._score_board[__player.name] = 0
         self._players.append(__player)
+        self._players_name.append(__player.name)
 
     def start(self) -> None:
         if len(self._players) < 4:
@@ -54,7 +56,6 @@ class Game:
         print("遊戲即將開始")
         self._shuffle_card_stack()
         self._deal_cards()
-        self._generate_player_map()
         self._start_game()
 
     def _shuffle_card_stack(self) -> None:
@@ -64,12 +65,8 @@ class Game:
     def _deal_cards(self) -> None:
         print("正在發牌")
         for player in self._players:
-            player.deck = {self._card_stack.draw() for _ in range(13)}
-
-    def _generate_player_map(self) -> None:
-        self._player_map = {
-            player.name: number for number, player in enumerate(self._players)
-        }
+            deck = {self._card_stack.draw() for _ in range(13)}
+            player.set_deck(deck)
 
     def _start_game(self) -> None:
         print("遊戲開始")
@@ -81,7 +78,7 @@ class Game:
         print(f"現在是第 {__round} 回合：")
         plays: dict[str, Card] = {}
         for player in self._players:
-            print(f"輪到 {player} 行動")
+            print(f"輪到 {player.name} 行動")
             self._ask_for_exchange(player, round=__round)
             self._ask_for_play(player, plays=plays)
         self._check_return_deck(__round)
@@ -89,7 +86,7 @@ class Game:
 
     def _ask_for_exchange(self, __player: ShowdownPlayer, round: int) -> None:
         if __player.exchanged is False and __player.want_exchange():
-            target_index = __player.choose_player_to_exchange_card(self._player_map)
+            target_index = __player.choose_player_to_exchange_card(self._players_name)
             target_player = self._players[target_index]
             print(f"玩家 {__player.name} 要求與玩家 {target_player.name} 交換手牌")
             self._exchange_deck(
@@ -120,7 +117,7 @@ class Game:
     def _check_return_deck(self, __round: int) -> None:
         exchange_delay = 3
         for player1, player2 in self._exchanged[__round - exchange_delay]:
-            print(f"玩家 {player1} 和 玩家 {player2} 將手牌換回")
+            print(f"玩家 {player1.name} 和 玩家 {player2.name} 將手牌換回")
             self._exchange_deck(player1, player2)
 
     def _find_current_round_winner(self, plays: dict[str, Card]) -> None:
@@ -131,5 +128,6 @@ class Game:
         self._score_board[winner] += 1
 
     def _find_winner(self):
+        # TODO: 有可能平手
         winner, score = max(self._score_board.items(), key=lambda x: x[1])
         print(f"獲勝的是：{winner}，一共獲得了 {score} 分")
