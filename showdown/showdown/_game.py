@@ -81,8 +81,8 @@ class Game:
             print(f"輪到 {player.name} 行動")
             self._ask_for_exchange(player, round=__round)
             self._ask_for_play(player, plays=plays)
-        self._check_return_deck(__round)
         self._find_current_round_winner(plays)
+        self._check_return_deck(__round)
 
     def _ask_for_exchange(self, __player: ShowdownPlayer, round: int) -> None:
         if __player.exchanged is False and __player.want_exchange():
