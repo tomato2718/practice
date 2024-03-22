@@ -56,4 +56,4 @@ class _DummyCard(ShowdownCard):
     name = "pass"
     weight = -1
 
-DummyCard = _DummyCard()
+DummyCard: ShowdownCard = _DummyCard()
