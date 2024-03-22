@@ -1,4 +1,5 @@
 from collections import defaultdict
+from json import dumps
 
 from ._cardstack import CardStack
 from ._card import ShowdownCard
@@ -106,5 +107,12 @@ class Game:
 
     def _find_winner(self):
         # TODO: 有可能平手
-        winner, score = max(self._score_board.items(), key=lambda x: x[1])
-        print(f"獲勝的是：{winner}，一共獲得了 {score} 分")
+        print("遊戲結束！")
+        print(dumps(self._score_board, indent=2))
+        max_score = max(self._score_board.values())
+        winner_list = []
+        for player, score in self._score_board.items():
+            if score == max_score:
+                winner_list.append(player)
+        winner = " 和 ".join(winner_list)
+        print(f"獲勝的是：{winner}，一共獲得了 {max_score} 分")
