@@ -2,20 +2,16 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from showdown.showdown._game import Card, Game, ShowdownPlayer
+from showdown.showdown.game._deck import Deck
+from showdown.showdown.game._game import Game
+from showdown.showdown.game.interface import ShowdownCard, ShowdownPlayer
 
 
 class TestGame:
     @staticmethod
     @pytest.fixture(scope="function")
     def game() -> Game:
-        class MockCardStack:
-            def shuffle(self): ...
-            def draw(self) -> Card:
-                return MagicMock()
-
-        game = Game(card_stack=MockCardStack())
-        return game
+        return Game()
 
     @staticmethod
     @pytest.fixture(scope="class")
@@ -23,12 +19,12 @@ class TestGame:
         class MockPlayer:
             name: str
             exchanged: bool
-            deck: set[Card]
+            deck: Deck
 
             def __init__(self, __name: str):
                 self.name = __name
 
-            def set_deck(self, __deck: set[Card]) -> None:
+            def set_deck(self, __deck: Deck) -> None:
                 self.deck = __deck
 
             def choose_player_to_exchange_card(
@@ -36,7 +32,7 @@ class TestGame:
                 players: list[str],
             ) -> int: ...
 
-            def action(self) -> Card: ...
+            def action(self) -> ShowdownCard: ...
 
             def want_exchange(self) -> bool: ...
 
@@ -95,15 +91,27 @@ class TestGame:
 
     @staticmethod
     def test_deal_cards(game: Game, MockPlayer: type[ShowdownPlayer]):
-        game.add_player(MockPlayer("foo"))
-        game.add_player(MockPlayer("bar"))
-        game.add_player(MockPlayer("baz"))
-        game.add_player(MockPlayer("qux"))
+        player1 = MockPlayer("foo")
+        player2 = MockPlayer("bar")
+        player3 = MockPlayer("baz")
+        player4 = MockPlayer("qux")
+
+        player1.set_deck = MagicMock()
+        player2.set_deck = MagicMock()
+        player3.set_deck = MagicMock()
+        player4.set_deck = MagicMock()
+
+        game.add_player(player1)
+        game.add_player(player2)
+        game.add_player(player3)
+        game.add_player(player4)
 
         game._deal_cards()
 
-        for player in game._players:
-            assert len(player.deck) == 13
+        player1.set_deck.assert_called_once()
+        player2.set_deck.assert_called_once()
+        player3.set_deck.assert_called_once()
+        player4.set_deck.assert_called_once()
 
     @staticmethod
     def test_start_game(game: Game):

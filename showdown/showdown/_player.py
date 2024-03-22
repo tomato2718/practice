@@ -2,20 +2,19 @@ __all__ = ["BotPlayer", "RealPlayer"]
 
 from abc import ABC, abstractmethod
 
-from ._card import DummyCard
-from ._game import Card
+from .game import ShowdownCard, Deck
 
 
 class Player(ABC):
     name: str
     exchanged: bool
-    deck: set[Card]
+    deck: Deck
 
     def __init__(self, name: str) -> None:
         self.name = name
         self.exchanged = False
 
-    def set_deck(self, __deck: set[Card]) -> None:
+    def set_deck(self, __deck: Deck) -> None:
         self.deck = __deck
 
     @abstractmethod
@@ -25,7 +24,7 @@ class Player(ABC):
     ) -> int: ...
 
     @abstractmethod
-    def action(self) -> Card: ...
+    def action(self) -> ShowdownCard: ...
 
     @abstractmethod
     def want_exchange(self) -> bool: ...
@@ -40,22 +39,16 @@ class BotPlayer(Player):
     def want_exchange(self) -> bool:
         return False
 
-    def action(self) -> Card:
-        if self.deck:
-            return self.deck.pop()
-        else:
-            return DummyCard()
+    def action(self) -> ShowdownCard:
+        card = self.deck.draw(0)
+        return card
 
 
 class RealPlayer(Player):
-    def set_deck(self, __deck: set[Card]) -> None:
+    def set_deck(self, __deck: Deck) -> None:
         print("你持有的手牌為：")
+        print(__deck.get_choice())
         super().set_deck(__deck)
-        print(self._get_sorted_deck())
-
-    def _get_sorted_deck(self) -> list[str]:
-        sorted_deck = sorted(list(self.deck), key=lambda x: x.weight)
-        return [card.name for card in sorted_deck]
 
     def choose_player_to_exchange_card(
         self,
@@ -78,20 +71,15 @@ class RealPlayer(Player):
             print("請輸入 y 或 n。")
         return res == "y"
 
-    def action(self) -> Card:
-        if not self.deck:
-            print("你沒有能出的手牌，將會跳過此回合")
-            return DummyCard()
-
+    def action(self) -> ShowdownCard:
         print("請選擇要出的手牌：")
-        output_deck = {
-            str(index): card for index, card in enumerate(self._get_sorted_deck())
-        }
-        while (target := input(f"{output_deck}：")) not in output_deck:
-            print("請選擇擁有的手牌")
-
-        for card in self.deck:
-            if card.name == output_deck[target]:
+        choice = self.deck.get_choice()
+        print(choice)
+        while True:
+            target = input("：")
+            if not (target.isdigit() and int(target) in choice):
+                print("請選擇擁有的手牌")
+            else:
                 break
-        self.deck.remove(card)
+        card = self.deck.draw(int(target))
         return card

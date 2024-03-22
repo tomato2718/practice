@@ -1,11 +1,13 @@
 __all__ = [
-    "CardImp",
-    "CardStack",
+    "ShowdownCard",
+    "Card",
     "DummyCard",
+    "COLOR",
+    "RANK",
 ]
 
 from typing import Literal, TypeAlias
-from random import shuffle
+from abc import ABC
 
 _Colors: TypeAlias = Literal["黑桃", "紅心", "方塊", "梅花"]
 _Ranks: TypeAlias = Literal[
@@ -35,11 +37,11 @@ RANK: dict[_Ranks, int] = {
     "A": 14,
 }
 
-
-class CardImp:
-    name: str
+class ShowdownCard(ABC):
     weight: int
+    name: str
 
+class Card(ShowdownCard):
     def __init__(self, color: _Colors, rank: _Ranks):
         self.name = color + rank
         self.weight = self._calculate_weight(color, rank)
@@ -50,25 +52,8 @@ class CardImp:
         return weight
 
 
-class DummyCard:
-    name = ""
+class _DummyCard(ShowdownCard):
+    name = "pass"
     weight = -1
 
-
-class CardStack:
-    _stack: list[CardImp]
-
-    def __init__(self) -> None:
-        self._stack = []
-        for color in COLOR:
-            for rank in RANK:
-                self._stack.append(CardImp(color=color, rank=rank))
-
-    def shuffle(self) -> None:
-        shuffle(self._stack)
-
-    def draw(self) -> CardImp:
-        if self._stack:
-            return self._stack.pop()
-        else:
-            raise Exception("Card stack is empty.")
+DummyCard = _DummyCard()

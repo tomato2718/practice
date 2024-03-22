@@ -1,32 +1,9 @@
 from collections import defaultdict
-from typing import Protocol
 
-
-class Card(Protocol):
-    weight: int
-    name: str
-
-
-class CardStack(Protocol):
-    def shuffle(self) -> None: ...
-    def draw(self) -> Card: ...
-
-
-class ShowdownPlayer(Protocol):
-    name: str
-    exchanged: bool
-    deck: set[Card]
-
-    def set_deck(self, __deck: set[Card]) -> None: ...
-
-    def choose_player_to_exchange_card(
-        self,
-        players: list[str],
-    ) -> int: ...
-
-    def action(self) -> Card: ...
-
-    def want_exchange(self) -> bool: ...
+from ._cardstack import CardStack
+from ._card import ShowdownCard
+from ._deck import Deck
+from .interface import ShowdownPlayer
 
 
 class Game:
@@ -36,12 +13,12 @@ class Game:
     _players_name: list[str]
     _exchanged: dict[int, list[tuple[ShowdownPlayer, ShowdownPlayer]]]
 
-    def __init__(self, card_stack: CardStack) -> None:
+    def __init__(self) -> None:
+        self._card_stack = CardStack()
         self._score_board = dict()
         self._players = list()
         self._players_name = list()
         self._exchanged = defaultdict(list)
-        self._card_stack = card_stack
 
     def add_player(self, __player: ShowdownPlayer) -> None:
         if len(self._players) == 4:
@@ -65,7 +42,7 @@ class Game:
     def _deal_cards(self) -> None:
         print("正在發牌")
         for player in self._players:
-            deck = {self._card_stack.draw() for _ in range(13)}
+            deck = Deck([self._card_stack.draw() for _ in range(13)])
             player.set_deck(deck)
 
     def _start_game(self) -> None:
@@ -76,7 +53,7 @@ class Game:
 
     def _start_round(self, __round: int) -> None:
         print(f"現在是第 {__round} 回合：")
-        plays: dict[str, Card] = {}
+        plays: dict[str, ShowdownCard] = {}
         for player in self._players:
             print(f"輪到 {player.name} 行動")
             self._ask_for_exchange(player, round=__round)
@@ -110,7 +87,7 @@ class Game:
     ) -> None:
         self._exchanged[round].append(players)
 
-    def _ask_for_play(self, __player: ShowdownPlayer) -> Card:
+    def _ask_for_play(self, __player: ShowdownPlayer) -> ShowdownCard:
         card = __player.action()
         return card
 
@@ -120,7 +97,7 @@ class Game:
             print(f"玩家 {player1.name} 和 玩家 {player2.name} 將手牌換回")
             self._exchange_deck(player1, player2)
 
-    def _find_current_round_winner(self, plays: dict[str, Card]) -> None:
+    def _find_current_round_winner(self, plays: dict[str, ShowdownCard]) -> None:
         for player, card in plays.items():
             print(f"{player} 出的是 {card.name}")
         winner, _ = max(plays.items(), key=lambda x: x[1].weight)
