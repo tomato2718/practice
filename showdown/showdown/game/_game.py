@@ -106,7 +106,6 @@ class Game:
         self._score_board[winner] += 1
 
     def _find_winner(self):
-        # TODO: 有可能平手
         print("遊戲結束！")
         print(dumps(self._score_board, indent=2))
         max_score = max(self._score_board.values())
